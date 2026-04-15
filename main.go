@@ -5,45 +5,45 @@ import (
 	"os/exec"
 )
 
-func runCheck(command string, args ...string) (string, error) {
+type CheckResult struct {
+	Name   string
+	Status string
+	Err    error
+}
+
+func runCheck(name string, command string, args ...string) CheckResult {
 	cmd := exec.Command(command, args...)
 	err := cmd.Run()
 	if err != nil {
-		return "NOT AVAILABLE", err
+		return CheckResult{Name: name, Status: "NOT AVAILABLE", Err: err}
 	}
-	return "RUNNING", nil
+
+	return CheckResult{Name: name, Status: "RUNNING", Err: nil}
 }
 
-func checkDocker() (string, error) {
-	return runCheck("docker", "info")
+func checkDocker() CheckResult {
+	return runCheck("Docker", "docker", "info")
 }
 
-func checkKubernetes() (string, error) {
-	return runCheck("kubectl", "version", "--client")
+func checkKubernetes() CheckResult {
+	return runCheck("Kubernets", "kubectl", "version", "--client")
 }
 
-func checkTailscale() (string, error) {
-	return runCheck("tailscale", "status")
+func checkTailscale() CheckResult {
+	return runCheck("Tailscale", "tailscale", "status")
+}
+
+func printResult(result CheckResult) {
+	fmt.Println(result.Name + ":", result.Status)
+	if result.Err != nil {
+		fmt.Println(result.Name+" error:", result.Err)
+	}
 }
 
 func main() {
 	fmt.Println("=== opspeek ===")
-	
-	dockerStatus, dockerErr := checkDocker()
-	fmt.Println("Docker:", dockerStatus)
-	if dockerErr != nil {
-		fmt.Println("Docker error:", dockerErr)
-	}
 
-	kubernetesStatus, kubernetesErr := checkKubernetes()
-	fmt.Println("Kubernetes:", kubernetesStatus)
-	if kubernetesErr != nil {
-		fmt.Println("Kubernetes error:", kubernetesErr)
-	}
-
-	tailscaleStatus, tailscaleErr := checkTailscale()
-	fmt.Println("Tailscale:", tailscaleStatus)
-	if tailscaleErr != nil {
-		fmt.Println("Tailscale error:", tailscaleErr)
-	}
+	printResult(checkDocker())
+	printResult(checkKubernetes())
+	printResult(checkTailscale())
 }
