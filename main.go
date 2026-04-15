@@ -5,8 +5,8 @@ import (
 	"os/exec"
 )
 
-func checkDocker() (string, error) {
-	cmd := exec.Command("docker", "info")
+func runCheck(command string, args ...string) (string, error) {
+	cmd := exec.Command(command, args...)
 	err := cmd.Run()
 	if err != nil {
 		return "NOT AVAILABLE", err
@@ -14,13 +14,16 @@ func checkDocker() (string, error) {
 	return "RUNNING", nil
 }
 
+func checkDocker() (string, error) {
+	return runCheck("docker", "info")
+}
+
+func checkKubernetes() (string, error) {
+	return runCheck("kubectl", "version", "--client")
+}
+
 func checkTailscale() (string, error) {
-	cmd := exec.Command("tailscale", "status")
-	err := cmd.Run()
-	if err != nil {
-		return "NOT AVAILABLE", err
-	}
-	return "RUNNING", nil
+	return runCheck("tailscale", "status")
 }
 
 func main() {
@@ -30,6 +33,12 @@ func main() {
 	fmt.Println("Docker:", dockerStatus)
 	if dockerErr != nil {
 		fmt.Println("Docker error:", dockerErr)
+	}
+
+	kubernetesStatus, kubernetesErr := checkKubernetes()
+	fmt.Println("Kubernetes:", kubernetesStatus)
+	if kubernetesErr != nil {
+		fmt.Println("Kubernetes error:", kubernetesErr)
 	}
 
 	tailscaleStatus, tailscaleErr := checkTailscale()
