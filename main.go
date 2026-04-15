@@ -26,13 +26,15 @@ func checkTailscale() (string, error) {
 func main() {
 	fmt.Println("=== opspeek ===")
 	
-	status, err := checkDocker()
-	fmt.Println("Docker:", status)
+	dockerStatus, dockerErr := checkDocker()
+	fmt.Println("Docker:", dockerStatus)
+	if dockerErr != nil {
+		fmt.Println("Docker error:", dockerErr)
+	}
 
-	status, err = checkTailscale()
-	fmt.Println("Tailscale:", status)
-
-	if err != nil {
-		fmt.Println("Error:", err)
+	tailscaleStatus, tailscaleErr := checkTailscale()
+	fmt.Println("Tailscale:", tailscaleStatus)
+	if tailscaleErr != nil {
+		fmt.Println("Tailscale error:", tailscaleErr)
 	}
 }
